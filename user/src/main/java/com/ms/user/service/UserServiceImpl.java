@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.ms.user.exception.UserInfoException;
 import com.ms.user.exception.UserNotFoundException;
 import com.ms.user.exception.UserUnauthorizeException;
+import com.ms.user.logger.CommonLogger;
 import com.ms.user.model.bean.User;
 import com.ms.user.model.generic.BaseResult;
 import com.ms.user.model.generic.UserToken;
@@ -23,12 +24,11 @@ import com.ms.user.repository.UserRepository;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import jline.internal.Log;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+
+
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl extends CommonLogger implements UserService {
 
 	@Autowired
 	UserRepository daoUser;
@@ -55,14 +55,13 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public ResponseEntity<User> addUser(User user) {
 
-		//logger.trace("Agregando usuario " + user.toString());
-		Log.info("Agregando usuario " + user.toString());
+		logger.trace("Agregando usuario " + user.toString());
 		daoUser.findByEmail(user.getEmail()).ifPresent(us -> {
 			throw new UserInfoException("El correo ya esta registrado", HttpStatus.CONFLICT);
 		});
 		user.setLocalDatesWhenAdd(LocalDateTime.now());
 		daoUser.save(user);
-		Log.info("Usuario " + user.getName() + " fue agregado correctamente");
+		logger.info("Usuario " + user.getName() + " fue agregado correctamente");
 		return ResponseEntity.status(HttpStatus.CREATED).body(user);
 
 	}
@@ -70,11 +69,11 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public ResponseEntity<BaseResult> updateUser(User user) {
 
-		Log.info("Actualizando usuario " + user.toString());
+		logger.trace("Actualizando usuario " + user.toString());
 
 		User userFound = daoUser.findById(user.getId()).orElseThrow(UserNotFoundException::new);
 
-		Log.info("Usuario encontrado " + userFound.toString());
+		logger.info("Usuario encontrado " + userFound.toString());
 
 		if (!userFound.getEmail().equalsIgnoreCase(user.getEmail())) {
 			daoUser.findByEmail(user.getEmail()).ifPresent(us -> {
@@ -84,7 +83,7 @@ public class UserServiceImpl implements UserService {
 		user.setModified(LocalDateTime.now());
 		daoUser.save(user);
 
-		Log.info("Usuario actualizado exitosamente " + user.toString());
+		logger.info("Usuario actualizado exitosamente " + user.toString());
 		return ResponseEntity.status(HttpStatus.OK).body(new BaseResult());
 
 	}
@@ -92,13 +91,13 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public ResponseEntity<BaseResult> deleteUser(UUID id) {
 
-		Log.info("Eliminando usuario con id" + String.valueOf(id));
+		logger.trace("Eliminando usuario con id" + String.valueOf(id));
 
 		User userFound = daoUser.findById(id).orElseThrow(UserNotFoundException::new);
 
-		Log.info("Usuario a eliminar " + userFound.toString());
+		logger.info("Usuario a eliminar " + userFound.toString());
 		daoUser.delete(userFound);
-		Log.info("Usuario eliminado exitosamente");
+		logger.info("Usuario eliminado exitosamente");
 		return ResponseEntity.status(HttpStatus.OK).body(new BaseResult());
 
 	}
@@ -106,33 +105,33 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public ResponseEntity<User> retriveUserById(UUID id) {
 
-		Log.info("Buscando usuario con id" + String.valueOf(id));
+		logger.trace("Buscando usuario con id" + String.valueOf(id));
 
 		User userFound = daoUser.findById(id).orElseThrow(UserNotFoundException::new);
 
-		Log.info("Usuario encontrado " + userFound.toString());
+		logger.info("Usuario encontrado " + userFound.toString());
 		return ResponseEntity.status(HttpStatus.OK).body(userFound);
 	}
 
 	@Override
 	public ResponseEntity<List<User>> retriveUsers() {
 
-		Log.info("Buscando todos los usuarios en el sistema");
+		logger.trace("Buscando todos los usuarios en el sistema");
 
 		List<User> usersList = daoUser.findAll();
 
-		Log.info("Retornando todos los usuarios encontrados");
+		logger.trace("Retornando todos los usuarios encontrados");
 		return ResponseEntity.status(HttpStatus.OK).body(usersList);
 	}
 	
 	@Override
 	public ResponseEntity<List<User>> retriveUsersByName(String name) {
 		
-		Log.info("Buscando usuario con el nombre " + name);
+		logger.trace("Buscando usuario con el nombre " + name);
 
 		List<User> userFound = daoUser.findByName(name).orElseThrow(UserNotFoundException::new);
 
-		Log.info("Usuario encontrado " + userFound.toString());
+		logger.info("Usuario encontrado " + userFound.toString());
 		return ResponseEntity.status(HttpStatus.OK).body(userFound);
 	}
 
@@ -146,7 +145,7 @@ public class UserServiceImpl implements UserService {
 	
 	private String getJWTToken(String email) {
 
-		Log.info("Generando token para el usuario " + email);
+		logger.trace("Generando token para el usuario " + email);
 
 		String secretKey = "mySecretKey";
 		List<GrantedAuthority> grantedAuthorities = AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_USER");
@@ -158,7 +157,7 @@ public class UserServiceImpl implements UserService {
 				.setExpiration(new Date(System.currentTimeMillis() + MILLISECONDS_JWT))
 				.signWith(SignatureAlgorithm.HS512, secretKey.getBytes()).compact();
 
-		Log.info("Token creado");
+		logger.trace("Token creado");
 		return token;
 	}
 
