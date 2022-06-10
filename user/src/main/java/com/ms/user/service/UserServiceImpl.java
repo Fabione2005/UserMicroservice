@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +35,9 @@ public class UserServiceImpl extends CommonLogger implements UserService {
 	@Autowired
 	UserRepository daoUser;
 	
+	@Autowired
+	HttpServletRequest request;
+	
 	//Una hora de vigencia para el token
 	private static final long MILLISECONDS_JWT = 3600000;
 
@@ -59,7 +64,11 @@ public class UserServiceImpl extends CommonLogger implements UserService {
 		daoUser.findByEmail(user.getEmail()).ifPresent(us -> {
 			throw new UserInfoException("El correo ya esta registrado", HttpStatus.CONFLICT);
 		});
+		
+		String token = this.getHeaderValue("Authorization");
+		
 		user.setLocalDatesWhenAdd(LocalDateTime.now());
+		user.setToken(token);
 		daoUser.save(user);
 		logger.info("Usuario " + user.getName() + " fue agregado correctamente");
 		return ResponseEntity.status(HttpStatus.CREATED).body(user);
@@ -69,6 +78,9 @@ public class UserServiceImpl extends CommonLogger implements UserService {
 	@Override
 	public ResponseEntity<BaseResult> updateUser(User user) {
 
+		if(user.getId() == null || user.getId().equals(""))
+			throw new UserInfoException("El campo Id no puede ser nulo", HttpStatus.BAD_REQUEST);
+		
 		logger.trace("Actualizando usuario " + user.toString());
 
 		User userFound = daoUser.findById(user.getId()).orElseThrow(UserNotFoundException::new);
@@ -166,6 +178,10 @@ public class UserServiceImpl extends CommonLogger implements UserService {
 		
 		this.daoUser = repository;
 		
+	}
+	
+	private String getHeaderValue(String headerName) {
+		return request.getHeader(headerName).replace("Bearer ","");
 	}
 
 	
