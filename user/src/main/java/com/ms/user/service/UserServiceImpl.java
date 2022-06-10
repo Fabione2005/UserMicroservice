@@ -68,7 +68,7 @@ public class UserServiceImpl extends CommonLogger implements UserService {
 		String token = this.getHeaderValue("Authorization");
 		
 		user.setLocalDatesWhenAdd(LocalDateTime.now());
-		user.setToken(token);
+		user.setToken(token.replace("Bearer ",""));
 		daoUser.save(user);
 		logger.info("Usuario " + user.getName() + " fue agregado correctamente");
 		return ResponseEntity.status(HttpStatus.CREATED).body(user);
@@ -181,7 +181,7 @@ public class UserServiceImpl extends CommonLogger implements UserService {
 	}
 	
 	private String getHeaderValue(String headerName) {
-		return request.getHeader(headerName).replace("Bearer ","");
+		return request.getHeader(headerName);
 	}
 
 	
