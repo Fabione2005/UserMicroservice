@@ -12,6 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
@@ -26,6 +27,7 @@ public class User {
 	private UUID id;
 
 	@NotNull(message = "El nombre no puede estar vacio")
+	@NotEmpty(message = "El campo nombre no puede estar vacio")
 	private String name;
 	
 	@NotNull(message = "El email no puede estar vacio")
