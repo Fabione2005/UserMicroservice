@@ -1,4 +1,6 @@
 
+ALTER TABLE USER ALTER COLUMN TOKEN VARCHAR(350) DEFAULT NULL;
+
 INSERT INTO USER (id,name,email,password,last_login,modified,created,is_active) VALUES
   ('63e367fa88e34cb8a02b596c5addbd3b','Manuel','Manuelito@yahoo.com','AAcisco43234','2022-06-10','2022-06-10','2022-06-10',true),
   ('6a658be99a154c808a4db32383996780','Daniela','Danielita@yahoo.com','AAcisco43234','2022-06-10','2022-06-10','2022-06-10',true);
