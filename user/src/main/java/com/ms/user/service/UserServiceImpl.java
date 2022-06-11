@@ -167,9 +167,10 @@ public class UserServiceImpl extends CommonLogger implements UserService {
 	
 
 	@Override
-	public void setRepository(UserRepository repository) {
+	public void setComponents(UserRepository repository,TokenUtilComponent tokenUtilComponent) {
 		
 		this.daoUser = repository;
+		this.tokenUtilComponent = tokenUtilComponent;
 		
 	}
 	

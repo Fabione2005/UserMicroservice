@@ -48,7 +48,7 @@ public class User {
 	
 	private LocalDateTime last_login;
 	
-	private boolean isActive;
+	private boolean active;
 	
 	private String createdBy;
 	
@@ -72,7 +72,7 @@ public class User {
 		this.created = created;
 		this.modified = modified;
 		this.last_login = last_login;
-		this.isActive = isActive;
+		this.active = isActive;
 	}
 
 	public UUID getId() {
@@ -148,11 +148,11 @@ public class User {
 	}
 
 	public boolean isActive() {
-		return isActive;
+		return active;
 	}
 
 	public void setActive(boolean isActive) {
-		this.isActive = isActive;
+		this.active = isActive;
 	}
 	
 	public void setLocalDatesWhenAdd(LocalDateTime date) 
@@ -170,7 +170,7 @@ public class User {
 
 	@Override
 	public String toString() {
-		return "User [id=" + id + ", name=" + name + ", email=" + email + ", phone=" + phones + ", isActive=" + isActive
+		return "User [id=" + id + ", name=" + name + ", email=" + email + ", phone=" + phones + ", isActive=" + active
 				+ "]";
 	}
 	

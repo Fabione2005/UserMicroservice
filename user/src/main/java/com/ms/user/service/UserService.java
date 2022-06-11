@@ -9,6 +9,7 @@ import com.ms.user.model.bean.User;
 import com.ms.user.model.generic.BaseResult;
 import com.ms.user.model.generic.UserToken;
 import com.ms.user.repository.UserRepository;
+import com.ms.user.security.TokenUtilComponent;
 
 public interface UserService 
 {
@@ -20,5 +21,5 @@ public interface UserService
 	ResponseEntity<List<User>> retriveUsers();
 	ResponseEntity<List<User>> retriveUsersByName(String name);
 	ResponseEntity<BaseResult> deleteAllUsers();
-	void setRepository(UserRepository repository);
+	void setComponents(UserRepository repository,TokenUtilComponent tokenUtilComponent);
 }
