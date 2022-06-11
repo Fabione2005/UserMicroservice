@@ -14,7 +14,6 @@ import javax.persistence.OneToMany;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 
 import lombok.EqualsAndHashCode;
 
@@ -35,8 +34,6 @@ public class User {
 	private String email;
 	
 	@NotNull(message = "La clave no puede estar vacia")
-	@Pattern(regexp = "^(?=.{4,}$$)(?=(?:.*[A-Z]))(?=.*[a-z])(?=(?:.*[0-9]){2}).*",message = "La clave debe tener un minimo de una mayuscula"
-			+ ", letras minusculas y dos numeros")
 	private String password;
 	
 	@OneToMany(targetEntity=Phone.class, fetch= FetchType.EAGER, cascade= CascadeType.ALL)
@@ -51,8 +48,14 @@ public class User {
 	
 	private LocalDateTime last_login;
 	
-	private boolean isActive;
+	private boolean active;
 	
+	private String createdBy;
+	
+	private String updatedBy;
+	
+	
+
 	public User() {
 		super();
 	}
@@ -69,7 +72,7 @@ public class User {
 		this.created = created;
 		this.modified = modified;
 		this.last_login = last_login;
-		this.isActive = isActive;
+		this.active = isActive;
 	}
 
 	public UUID getId() {
@@ -145,11 +148,11 @@ public class User {
 	}
 
 	public boolean isActive() {
-		return isActive;
+		return active;
 	}
 
 	public void setActive(boolean isActive) {
-		this.isActive = isActive;
+		this.active = isActive;
 	}
 	
 	public void setLocalDatesWhenAdd(LocalDateTime date) 
@@ -167,10 +170,24 @@ public class User {
 
 	@Override
 	public String toString() {
-		return "User [id=" + id + ", name=" + name + ", email=" + email + ", phone=" + phones + ", isActive=" + isActive
+		return "User [id=" + id + ", name=" + name + ", email=" + email + ", phone=" + phones + ", isActive=" + active
 				+ "]";
 	}
 	
-	
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public String getUpdatedBy() {
+		return updatedBy;
+	}
+
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
+	}
 	
 }

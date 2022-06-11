@@ -1,18 +1,15 @@
 package com.ms.user.service;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletRequest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Service;
 
 import com.ms.user.exception.UserInfoException;
@@ -23,23 +20,26 @@ import com.ms.user.model.bean.User;
 import com.ms.user.model.generic.BaseResult;
 import com.ms.user.model.generic.UserToken;
 import com.ms.user.repository.UserRepository;
+import com.ms.user.security.TokenUtilComponent;
+import com.ms.user.security.dto.JwtUtilDto;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-
+import jline.internal.Log;
 
 
 @Service
 public class UserServiceImpl extends CommonLogger implements UserService {
 
 	@Autowired
-	UserRepository daoUser;
+	private UserRepository daoUser;
 	
 	@Autowired
-	HttpServletRequest request;
+	private TokenUtilComponent tokenUtilComponent;
 	
-	//Una hora de vigencia para el token
-	private static final long MILLISECONDS_JWT = 3600000;
+	@Value("${validate.password.regex}")
+	private String passwordRegex;
+	
+	@Value("${validate.password.message}")
+	private String passwordMessage;
 
 	@Override
 	public ResponseEntity<UserToken> loginAuth(UserToken user) {
@@ -48,7 +48,7 @@ public class UserServiceImpl extends CommonLogger implements UserService {
 				.filter(i -> i.getPassword().equals(user.getPassword()) && i.isActive()).orElseThrow(UserUnauthorizeException::new)
 				: daoUser.findByEmail(user.getUserEmail()).orElseThrow(UserUnauthorizeException::new);
 		
-		String tokenResult = this.getJWTToken(user.getUserEmail());
+		String tokenResult = tokenUtilComponent.getJWTToken(user.getUserEmail());
 		
 		userAthenticated.setDataWhenLogged(tokenResult);
 		
@@ -60,15 +60,18 @@ public class UserServiceImpl extends CommonLogger implements UserService {
 	@Override
 	public ResponseEntity<User> addUser(User user) {
 
-		logger.trace("Agregando usuario " + user.toString());
+		logger.info("Agregando usuario " + user.toString());
 		daoUser.findByEmail(user.getEmail()).ifPresent(us -> {
 			throw new UserInfoException("El correo ya esta registrado", HttpStatus.CONFLICT);
 		});
 		
-		String token = this.getHeaderValue("Authorization");
+		this.validatePassword(user.getPassword());
+		
+		JwtUtilDto jwtUtilDto = tokenUtilComponent.getJwtUtilDto();
 		
 		user.setLocalDatesWhenAdd(LocalDateTime.now());
-		user.setToken(token.replace("Bearer ",""));
+		user.setToken(jwtUtilDto.getToken());
+		user.setCreatedBy(jwtUtilDto.getSubject());
 		daoUser.save(user);
 		logger.info("Usuario " + user.getName() + " fue agregado correctamente");
 		return ResponseEntity.status(HttpStatus.CREATED).body(user);
@@ -81,6 +84,8 @@ public class UserServiceImpl extends CommonLogger implements UserService {
 		if(user.getId() == null || user.getId().equals(""))
 			throw new UserInfoException("El campo Id no puede ser nulo", HttpStatus.BAD_REQUEST);
 		
+		this.validatePassword(user.getPassword());
+		
 		logger.trace("Actualizando usuario " + user.toString());
 
 		User userFound = daoUser.findById(user.getId()).orElseThrow(UserNotFoundException::new);
@@ -92,7 +97,12 @@ public class UserServiceImpl extends CommonLogger implements UserService {
 				throw new UserInfoException("El correo ya esta registrado", HttpStatus.CONFLICT);
 			});
 		}
+		
+		JwtUtilDto jwtUtilDto = tokenUtilComponent.getJwtUtilDto();
+		
 		user.setModified(LocalDateTime.now());
+		user.setToken(jwtUtilDto.getToken());
+		user.setUpdatedBy(jwtUtilDto.getSubject());
 		daoUser.save(user);
 
 		logger.info("Usuario actualizado exitosamente " + user.toString());
@@ -155,23 +165,6 @@ public class UserServiceImpl extends CommonLogger implements UserService {
 		return ResponseEntity.status(HttpStatus.OK).body(new BaseResult());
 	}
 	
-	private String getJWTToken(String email) {
-
-		logger.trace("Generando token para el usuario " + email);
-
-		String secretKey = "mySecretKey";
-		List<GrantedAuthority> grantedAuthorities = AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_USER");
-
-		String token = Jwts.builder().setId("fabioneJWT").setSubject(email)
-				.claim("authorities",
-						grantedAuthorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-				.setIssuedAt(new Date(System.currentTimeMillis()))
-				.setExpiration(new Date(System.currentTimeMillis() + MILLISECONDS_JWT))
-				.signWith(SignatureAlgorithm.HS512, secretKey.getBytes()).compact();
-
-		logger.trace("Token creado");
-		return token;
-	}
 
 	@Override
 	public void setRepository(UserRepository repository) {
@@ -180,10 +173,18 @@ public class UserServiceImpl extends CommonLogger implements UserService {
 		
 	}
 	
-	private String getHeaderValue(String headerName) {
-		return request.getHeader(headerName);
+	
+	private void validatePassword(String password){
+
+		Log.info("validando clave");
+		
+	    Pattern pattern = Pattern.compile(passwordRegex);
+	    Matcher matcher = pattern.matcher(password);
+	    
+	    if(!matcher.matches())
+	    	throw new UserInfoException(passwordMessage, HttpStatus.BAD_REQUEST);
+	    
+	    Log.info("Clave valida");
 	}
 
-	
-	
 }
