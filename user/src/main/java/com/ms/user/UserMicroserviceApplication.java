@@ -12,7 +12,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.ms.user.security.JWTAuthorizationFilter;
 
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
 @SpringBootApplication
+@EnableSwagger2
 public class UserMicroserviceApplication {
 
 	public static void main(String[] args) {
@@ -29,6 +32,7 @@ public class UserMicroserviceApplication {
 				.addFilterAfter(new JWTAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
 				.authorizeRequests()
 				.antMatchers(HttpMethod.GET, "/user/auth").permitAll()
+				.antMatchers(HttpMethod.GET, "/v2/api-docs").permitAll()
 				.anyRequest().authenticated();
 		}
 		
