@@ -6,7 +6,7 @@ Microservicio con la responsabilidad de gestionar los usuarios del sistema, tant
 Detalla las operaciones que se pueden explotar a través del microservicio. 
 
 | Método | Operación                   | Descripción Capacidad                                                      |
-| ------ | ------                      | ------                                                                     | 
+| GET    | /v2/api-docs                | Con esta operacion se obtiene la documentacion de las apis en formato json |                                                                   
 | GET    | /user/auth            	   | Con esta operacion se obtiene el token de autenticacion                    |
 | POST   | /user/add                   | Con esta operacion se agrega a un nuevo usuario en el sistema              |
 | GET    | /user/list                  | Con esta operacion se obtiene la lista de usuarios que viven en el sistema |
@@ -35,13 +35,14 @@ Detalla las operaciones que se pueden explotar a través del microservicio.
 
 1. Puedes correr el API desde tu IDE o desde el compilado del proyecto luego de hacer build con gradle ubicado en .builds/libs. <br><br>
 
-2. Para llamar al endpoint del token se deben utilizar los datos(email y clave) ya guardados en el archivo "src/main/resources/data.sql" el cual guarda los datos en la H2	al correr la app. Puedes utilizar estas creedenciales: "Manuelito@yahoo.com", "AAcisco43234".<br><br>
+2. Para llamar al endpoint del token se deben utilizar los datos(email y clave) ya guardados en el archivo "src/main/resources/data.sql" el cual guarda los datos en la H2	al correr la app. De igual manera dejo aca las creedenciales: "Manuelito@yahoo.com", "AAcisco43234".<br><br>
 
 3. Para los test utilize JUnit para correr las pruebas tanto de java como de groovy(Spock).  
 
 ## Versiones
  
-### Versión 1.0
+### Versión 1.0.0
+ - Creacion de endpoint para la documentacion con Swagger
  - Creación de endpoint para obtener el token de autenticacion
  - Creacion de enpoint para crear un nuevo usuario
  - Creacion de endpoint para listar los usuarios existentes
